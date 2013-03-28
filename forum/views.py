@@ -14,7 +14,7 @@ from django.template.defaultfilters import striptags, wordwrap
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-from django.views.generic.list_detail import object_list
+from django.views.generic.list import ListView
 from django.contrib.auth.decorators import login_required
 
 from forum.models import Forum,Thread,Post,Subscription
@@ -25,7 +25,7 @@ LOGIN_URL = getattr(settings, 'LOGIN_URL', '/accounts/login/')
 
 def forums_list(request):
     queryset = Forum.objects.for_groups(request.user.groups.all()).filter(parent__isnull=True)
-    return object_list( request,
+    return ListView.as_view( request,
                         queryset=queryset)
 
 def forum(request, slug):
@@ -41,7 +41,7 @@ def forum(request, slug):
 
     form = CreateThreadForm(forum=f)
     child_forums = f.child.for_groups(request.user.groups.all())
-    return object_list( request,
+    return ListView.as_view( request,
                         queryset=f.thread_set.select_related().all(),
                         paginate_by=FORUM_PAGINATION,
                         template_object_name='thread',
@@ -85,7 +85,7 @@ def thread(request, thread):
     else:
         paginate_by = FORUM_PAGINATION
 
-    return object_list( request,
+    return ListView.as_view( request,
                         queryset=p,
                         paginate_by=paginate_by,
                         template_object_name='post',
