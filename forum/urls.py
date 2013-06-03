@@ -27,7 +27,7 @@ sitemap_dict = {
 }
 
 urlpatterns = patterns('',
-    url(r'^$', ListView.as_view(context_object_name='forum_index', model=Forum)),
+    url(r'^$', ListView.as_view(model=Forum), name='forum_index'),
     
     url(r'^(?P<url>(rss|atom).*)/$', 'django.contrib.syndication.views.Feed', {'feed_dict': feed_dict}),
 
