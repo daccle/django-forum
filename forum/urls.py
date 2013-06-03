@@ -13,6 +13,7 @@ from django.conf.urls.defaults import *
 from forum.models import Forum
 from forum.feeds import RssForumFeed, AtomForumFeed
 from forum.sitemap import ForumSitemap, ThreadSitemap, PostSitemap
+from django.views.generic import ListView
 
 feed_dict = {
     'rss' : RssForumFeed,
@@ -26,7 +27,7 @@ sitemap_dict = {
 }
 
 urlpatterns = patterns('',
-    url(r'^$', 'forum.views.forums_list', name='forum_index'),
+    url(r'^$', ListView.as_view(context_object_name='forum_index', model=Forum)),
     
     url(r'^(?P<url>(rss|atom).*)/$', 'django.contrib.syndication.views.Feed', {'feed_dict': feed_dict}),
 

@@ -23,10 +23,10 @@ from forum.forms import CreateThreadForm, ReplyForm, EditPost
 FORUM_PAGINATION = getattr(settings, 'FORUM_PAGINATION', 10)
 LOGIN_URL = getattr(settings, 'LOGIN_URL', '/accounts/login/')
 
+
 def forums_list(request):
     queryset = Forum.objects.for_groups(request.user.groups.all()).filter(parent__isnull=True)
-    return ListView.as_view( request,
-                        queryset=queryset)
+    return ListView.as_view(queryset=queryset)
 
 def forum(request, slug):
     """
