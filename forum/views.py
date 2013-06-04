@@ -24,78 +24,72 @@ FORUM_PAGINATION = getattr(settings, 'FORUM_PAGINATION', 10)
 LOGIN_URL = getattr(settings, 'LOGIN_URL', '/accounts/login/')
 
 
-def forums_list(request):
-    queryset = Forum.objects.for_groups(request.user.groups.all()).filter(parent__isnull=True)
-    return ListView.as_view(queryset=queryset)
-
-def forum(request, slug):
+class MyForumListView(ListView):
     """
     Displays a list of threads within a forum.
-    Threads are sorted by their sticky flag, followed by their 
+    Threads are sorted by their sticky flag, followed by their
     most recent post.
     """
-    try:
-        f = Forum.objects.for_groups(request.user.groups.all()).select_related().get(slug=slug)
-    except Forum.DoesNotExist:
-        raise Http404
+    template_name = 'forum/thread_list.html'
+    context_object_name = 'thread'
+    paginate_by = FORUM_PAGINATION
 
-    form = CreateThreadForm(forum=f)
-    child_forums = f.child.for_groups(request.user.groups.all())
-    return ListView.as_view( request,
-                        queryset=f.thread_set.select_related().all(),
-                        paginate_by=FORUM_PAGINATION,
-                        template_object_name='thread',
-                        template_name='forum/thread_list.html',
-                        extra_context = {
-                            'forum': f,
-                            'child_forums': child_forums,
-                            'form': form,
-                        })
+    def get_queryset(self):
+        try:
+            self.forum = Forum.objects.for_groups(self.request.user.groups.all()).select_related().get(slug=self.slug)
+        except Forum.DoesNotExist:
+            raise Http404
+        self.form = form = CreateThreadForm(forum=self.forum)
+        self.child_forums = self.forum.child.for_groups(self.request.user.groups.all())
+        return self.forum
 
-def thread(request, thread):
+    def get_context_data(self, **kwargs):
+        context = super(MyForumListView, self).get_context_data(**kwargs)
+        context['forum']: self.forum,
+        context['child_forums']: self.child_forums,
+        context['form']: self.form,})
+        return context
+
+class MyThreadListView(ListView):
     """
-    Increments the viewed count on a thread then displays the 
+    Increments the viewed count on a thread then displays the
     posts for that thread, in chronological order.
     """
-    try:
-        t = Thread.objects.select_related().get(pk=thread)
-        if not Forum.objects.has_access(t.forum, request.user.groups.all()):
-            raise Http404
-    except Thread.DoesNotExist:
-        raise Http404
-    
-    p = t.post_set.select_related('author').all().order_by('time')
-    s = None
-    if request.user.is_authenticated():
-        s = t.subscription_set.select_related().filter(author=request.user)
-
-    t.views += 1
-    t.save()
-
-    if s:
-        initial = {'subscribe': True}
-    else:
-        initial = {'subscribe': False}
-
-    form = ReplyForm(initial=initial)
-
-    page = request.GET.get('page', 1)
     if page == 'all':
         paginate_by = None
     else:
         paginate_by = FORUM_PAGINATION
+    context_object_name='post',
+    template_name='forum/thread.html',
 
-    return ListView.as_view( request,
-                        queryset=p,
-                        paginate_by=paginate_by,
-                        template_object_name='post',
-                        template_name='forum/thread.html',
-                        extra_context = {
-                            'forum': t.forum,
-                            'thread': t,
-                            'subscription': s,
-                            'form': form,
-                        })
+    def get_queryset(self):
+        try:
+            self.thread = Thread.objects.select_related().get(pk=thread)
+            if not Forum.objects.has_access(self.thread.forum, self.request.user.groups.all()):
+                raise Http404
+        except Thread.DoesNotExist:
+            raise Http404
+
+        self.forum = ''
+        self.subscription = None
+        if self.request.user.is_authenticated():
+            self.subscription = self.thread.subscription_set.select_related().filter(author=self.request.user)
+        self.form = ''
+        return self.thread.post_set.select_related('author').all().order_by('time')
+
+    def get_object(self):
+        object = super(MyThreadListView, self).get_object()
+        object.views += 1
+        object.save()
+        return object
+
+    def get_context_data(self, **kwargs):
+        context = super(MyThreadListView, self).get_context_data(**kwargs)
+        context['forum']: self.forum,
+        context['thread']: self.thread,
+        context['subscription']: self.subscription,
+        context['form']: self.form,})
+        return context
 
 
 @login_required
