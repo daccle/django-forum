@@ -8,7 +8,7 @@ methods. A little extra logic is in views.py.
 import os
 from django.db import models
 import datetime
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.html import escape
@@ -31,7 +31,6 @@ class Forum(models.Model):
     All of the parent/child recursion code here is borrowed directly from
     the Satchmo project: http://www.satchmoproject.com/
     """
-    groups = models.ManyToManyField(Group, blank=True)
     title = models.CharField(_("Title"), max_length=100)
     slug = models.SlugField(_("Slug"))
     parent = models.ForeignKey('self', blank=True, null=True, related_name='child')
