@@ -45,9 +45,9 @@ class MyForumListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(MyForumListView, self).get_context_data(**kwargs)
-        context['forum']: self.forum,
-        context['child_forums']: self.child_forums,
-        context['form']: self.form,})
+        context['forum'] =  self.forum,
+        context['child_forums'] =  self.child_forums,
+        context['form'] =  self.form
         return context
 
 class MyThreadListView(ListView):
@@ -85,10 +85,10 @@ class MyThreadListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(MyThreadListView, self).get_context_data(**kwargs)
-        context['forum']: self.forum,
-        context['thread']: self.thread,
-        context['subscription']: self.subscription,
-        context['form']: self.form,})
+        context['forum'] = self.forum,
+        context['thread'] = self.thread,
+        context['subscription'] = self.subscription,
+        context['form'] = self.form
         return context
 
 
