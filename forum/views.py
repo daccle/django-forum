@@ -36,12 +36,12 @@ class MyForumListView(ListView):
 
     def get_queryset(self):
         try:
-            self.forum = Forum.objects.for_groups(self.request.user.groups.all()).select_related().get(slug=self.slug)
+            self.forum = Forum.objects.for_groups(self.request.user.groups.all()).select_related().get(slug=self.kwargs.get('slug'))
         except Forum.DoesNotExist:
             raise Http404
-        self.form = form = CreateThreadForm(forum=self.forum)
+        self.form = CreateThreadForm(forum=self.forum)
         self.child_forums = self.forum.child.for_groups(self.request.user.groups.all())
-        return self.forum
+	return Thread.objects.filter(forum__id=self.forum.id)
 
     def get_context_data(self, **kwargs):
         context = super(MyForumListView, self).get_context_data(**kwargs)
@@ -55,16 +55,13 @@ class MyThreadListView(ListView):
     Increments the viewed count on a thread then displays the
     posts for that thread, in chronological order.
     """
-    if page == 'all':
-        paginate_by = None
-    else:
-        paginate_by = FORUM_PAGINATION
-    context_object_name='post',
-    template_name='forum/thread.html',
+    paginate_by = FORUM_PAGINATION
+    context_object_name='post'
+    template_name='forum/thread.html'
 
     def get_queryset(self):
         try:
-            self.thread = Thread.objects.select_related().get(pk=thread)
+            self.thread = Thread.objects.select_related().get(pk=self.kwargs.get('thread'))
             if not Forum.objects.has_access(self.thread.forum, self.request.user.groups.all()):
                 raise Http404
         except Thread.DoesNotExist:
@@ -85,9 +82,9 @@ class MyThreadListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(MyThreadListView, self).get_context_data(**kwargs)
-        context['forum'] = self.forum,
-        context['thread'] = self.thread,
-        context['subscription'] = self.subscription,
+        context['forum'] = self.forum
+        context['thread'] = self.thread
+        context['subscription'] = self.subscription
         context['form'] = self.form
         return context
 

@@ -204,7 +204,7 @@ class Thread(models.Model):
     get_absolute_url = models.permalink(get_absolute_url)
     
     def get_unpaginated_url(self):
-        return os.path.join(self.get_absolute_url(), "?page=all")
+        return os.path.join(self.get_absolute_url(), "?page=last")
 
     def __unicode__(self):
         return u'%s' % self.title

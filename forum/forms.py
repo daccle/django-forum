@@ -4,7 +4,6 @@ from forum.models import *
 import datetime
 
 class CreateThreadForm(forms.ModelForm):
-    forum = forms.IntegerField(widget=forms.HiddenInput)
     title = forms.CharField(label=_("Title"), max_length=100)
     body = forms.CharField(label=_("Body"), widget=forms.Textarea(attrs={'rows':8, 'cols':50}))
     subscribe = forms.BooleanField(label=_("Subscribe via email"), required=False)
@@ -12,7 +11,6 @@ class CreateThreadForm(forms.ModelForm):
     def __init__(self, forum, *args, **kw):
         super(CreateThreadForm, self).__init__(*args, **kw)
         self._forum = forum
-        self.initial['forum'] = self._forum.id
 
     class Meta:
         model = Thread
