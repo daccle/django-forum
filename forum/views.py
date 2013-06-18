@@ -148,7 +148,7 @@ def reply(request, thread, extra_context=None):
 
                 mail_tpl = loader.get_template('forum/notify.txt')
                 c = Context({
-                    'body': wordwrap(striptags(body), 72),
+                    'body': wordwrap(striptags(p.body), 72),
                     'site' : Site.objects.get_current(),
                     'thread': t,
                     })
