@@ -36,18 +36,17 @@ class MyForumListView(ListView):
 
     def get_queryset(self):
         try:
-            self.forum = Forum.objects.for_groups(self.request.user.groups.all()).select_related().get(slug=self.kwargs.get('slug'))
+            self.forum = Forum.objects.for_groups(self.request.user.groups.all()).get(slug__iexact=self.kwargs.get('slug'))
         except Forum.DoesNotExist:
             raise Http404
         self.form = CreateThreadForm(forum=self.forum)
-        self.child_forums = self.forum.child.for_groups(self.request.user.groups.all())
+        
 	return Thread.objects.filter(forum__id=self.forum.id)
 
     def get_context_data(self, **kwargs):
         context = super(MyForumListView, self).get_context_data(**kwargs)
-        context['forum'] =  self.forum,
-        context['child_forums'] =  self.child_forums,
-        context['form'] =  self.form
+        context['forum_id'] = self.forum.id,
+        context['form'] = self.form
         return context
 
 class MyThreadListView(ListView):
@@ -67,7 +66,6 @@ class MyThreadListView(ListView):
         except Thread.DoesNotExist:
             raise Http404
 
-        self.forum = ''
         self.subscription = None
         if self.request.user.is_authenticated():
             self.subscription = self.thread.subscription_set.select_related().filter(author=self.request.user)
@@ -82,7 +80,6 @@ class MyThreadListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(MyThreadListView, self).get_context_data(**kwargs)
-        context['forum'] = self.forum
         context['thread'] = self.thread
         context['subscription'] = self.subscription
         context['form'] = self.form
